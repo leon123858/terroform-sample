@@ -64,56 +64,64 @@ module "prod-vpc" {
   ]
 }
 
-resource "google_compute_firewall" "dev-rules" {
-  name        = "dev-rules"
-  network     = "griffin-dev-vpc"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
-
-resource "google_compute_firewall" "prod-rules" {
-  name        = "prod-rules"
-  network     = "griffin-prod-vpc"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
+// gcloud compute --project=qwiklabs-gcp-02-706aa7b92be3 firewall-rules create dev-rules --direction=INGRESS --priority=1000 --network=griffin-dev-vpc --action=ALLOW --rules=tcp:22 --source-ranges=0.0.0.0/0
+// gcloud compute --project=qwiklabs-gcp-02-706aa7b92be3 firewall-rules create dev-rules --direction=INGRESS --priority=1000 --network=griffin-prod-vpc --action=ALLOW --rules=tcp:22 --source-ranges=0.0.0.0/0
 
 resource "google_compute_instance" "bastion" {
-  name         = "bastion"
-  machine_type = "e2-medium"
-  zone         = local.zone
-
   boot_disk {
+    auto_delete = true
+    device_name = "bastion"
+
     initialize_params {
       image = "projects/debian-cloud/global/images/debian-11-bullseye-v20230814"
       size  = 10
       type  = "pd-balanced"
     }
+
+    mode = "READ_WRITE"
+  }
+
+  can_ip_forward      = false
+  deletion_protection = false
+  enable_display      = false
+
+  labels = {
+    goog-ec-src = "vm_add-tf"
+  }
+
+  machine_type = "e2-medium"
+
+  metadata = {
+    enable-oslogin = "true"
+  }
+
+  name = "bastion"
+
+  network_interface {
+    access_config {
+      network_tier = "PREMIUM"
+    }
+
+    subnetwork = "projects/qwiklabs-gcp-02-706aa7b92be3/regions/us-east1/subnetworks/griffin-dev-mgmt"
   }
 
   network_interface {
-    subnetwork = "projects/${local.project}/regions/${local.region}/subnetworks/griffin-prod-mgmt"
     access_config {
       network_tier = "PREMIUM"
     }
+
+    subnetwork = "projects/qwiklabs-gcp-02-706aa7b92be3/regions/us-east1/subnetworks/griffin-prod-mgmt"
   }
-  network_interface {
-    subnetwork = "projects/${local.project}/regions/${local.region}/subnetworks/griffin-dev-mgmt"
-    access_config {
-      network_tier = "PREMIUM"
-    }
+
+  shielded_instance_config {
+    enable_integrity_monitoring = true
+    enable_secure_boot          = false
+    enable_vtpm                 = true
   }
+
+  zone = "us-east1-b"
 }
+
 
 resource "google_sql_database_instance" "griffin-dev-db" {
   name             = "griffin-dev-db"
