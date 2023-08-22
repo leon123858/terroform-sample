@@ -32,6 +32,18 @@ remove all state now
 terraform destroy
 ```
 
+update terroform state by infra now
+
+```sh
+terraform refresh
+```
+
+get state now
+
+```sh
+terraform show
+```
+
 recreate all resource
 
 ```sh
