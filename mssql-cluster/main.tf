@@ -1,0 +1,28 @@
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+module "network" {
+  source          = "./network"
+  project_id      = var.project_id
+  vpc_name        = var.vpc_name
+  region          = var.region
+  sql_subnet_name = var.sql_subnet_name
+  subnet_name     = var.subnet_name
+}
+
+module "vms" {
+  source     = "./instances"
+  project_id = var.project_id
+  vpc_name = var.vpc_name
+  region = var.region
+  subnet_name = var.subnet_name
+  sql_subnet_name = var.sql_subnet_name
+  vm_ad1_name = var.vm_ad1_name
+  vm_ad2_name = var.vm_ad2_name
+  vm_zone1_name = var.zone_1
+  vm_zone2_name = var.zone_2
+
+  depends_on = [ module.network ]
+}
