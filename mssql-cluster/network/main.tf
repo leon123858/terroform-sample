@@ -140,7 +140,6 @@ module "address" {
   project_id = var.project_id # Replace this with your project ID in quotes
   region     = var.region
   subnetwork = "projects/${var.project_id}/regions/${var.region}/subnetworks/${var.sql_subnet_name}"
-  names      = ["wsfc", "wsfc-cluster"]
-  addresses  = ["10.10.20.10", "10.10.20.11"]
+  names      = ["lb", "sql-cluster"]
   depends_on = [module.vpc]
 }
