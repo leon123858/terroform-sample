@@ -48,3 +48,18 @@ variable "vm_ad2_name" {
   type        = string
   default     = "dbs204-vm-ad2"
 }
+variable "vm_db1_name" {
+  description = "Name of the db1."
+  type        = string
+  default     = "dbs204-sql1"
+}
+variable "vm_db2_name" {
+  description = "Name of the db2."
+  type        = string
+  default     = "dbs204-sql2"
+}
+variable "vm_fsw1" {
+  description = "Name of the fsw1."
+  type        = string
+  default     = "dbs204-vm-fsw1"
+}

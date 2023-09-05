@@ -34,3 +34,19 @@ variable "vm_zone2_name" {
   description = "Name of the zone2."
   type        = string
 }
+variable "vm_zone3_name" {
+  description = "Name of the zone3."
+  type        = string
+}
+variable "vm_db1_name" {
+  description = "Name of the db1."
+  type        = string
+}
+variable "vm_db2_name" {
+  description = "Name of the db2."
+  type        = string
+}
+variable "vm_fsw1" {
+  description = "Name of the fsw1."
+  type        = string
+}
