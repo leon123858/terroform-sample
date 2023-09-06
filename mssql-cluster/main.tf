@@ -26,6 +26,7 @@ module "vms" {
   vm_zone3_name   = var.zone_3
   vm_db1_name     = var.vm_db1_name
   vm_db2_name     = var.vm_db2_name
+  vm_db3_name     = var.vm_db3_name
   vm_fsw1         = var.vm_fsw1
 
   depends_on = [module.network]

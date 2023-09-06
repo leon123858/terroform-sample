@@ -118,6 +118,15 @@ resource "google_compute_disk" "data-disk2" {
   physical_block_size_bytes = 4096
 }
 
+resource "google_compute_disk" "data-disk3" {
+  name = "${var.vm_db3_name}-datadisk"
+  type = "pd-ssd"
+  zone = var.vm_zone2_name
+  size = 200
+
+  physical_block_size_bytes = 4096
+}
+
 resource "google_compute_instance" "db1" {
   depends_on = [google_compute_disk.data-disk1]
 
@@ -224,6 +233,69 @@ resource "google_compute_instance" "db2" {
     }
 
     network_ip = "10.10.20.3"
+    subnetwork = "projects/${var.project_id}/regions/${var.region}/subnetworks/${var.sql_subnet_name}"
+  }
+
+  scheduling {
+    automatic_restart   = true
+    on_host_maintenance = "MIGRATE"
+    preemptible         = false
+    provisioning_model  = "STANDARD"
+  }
+
+  shielded_instance_config {
+    enable_integrity_monitoring = true
+    enable_secure_boot          = true
+    enable_vtpm                 = true
+  }
+
+  tags = ["ad-member", "rdp", "sql", "wsfc", "wsfc-node"]
+  zone = var.vm_zone2_name
+}
+
+resource "google_compute_instance" "db3" {
+  depends_on = [google_compute_disk.data-disk3]
+
+  attached_disk {
+    source = google_compute_disk.data-disk3.self_link
+    mode   = "READ_WRITE"
+  }
+
+  metadata = {
+    enable-wsfc                   = "true"
+    sysprep-specialize-script-ps1 = "$ErrorActionPreference = \"stop\"\n\n# Install required Windows features\nInstall-WindowsFeature Failover-Clustering -IncludeManagementTools\nInstall-WindowsFeature RSAT-AD-PowerShell\n\n# Open firewall for WSFC\nnetsh advfirewall firewall add rule name=\"Allow SQL Server health check\" dir=in action=allow protocol=TCP localport=59997\n\n# Open firewall for SQL Server\nnetsh advfirewall firewall add rule name=\"Allow SQL Server\" dir=in action=allow protocol=TCP localport=1433\n\n# Open firewall for SQL Server replication\nnetsh advfirewall firewall add rule name=\"Allow SQL Server replication\" dir=in action=allow protocol=TCP localport=5022\n\n# Format data disk\nGet-Disk |\n Where partitionstyle -eq 'RAW' |\n Initialize-Disk -PartitionStyle MBR -PassThru |\n New-Partition -AssignDriveLetter -UseMaximumSize |\n Format-Volume -FileSystem NTFS -NewFileSystemLabel 'Data' -Confirm:$false\n\n# Create data and log folders for SQL Server\nmd d:\\Data\nmd d:\\Logs"
+  }
+
+  boot_disk {
+    auto_delete = true
+    device_name = var.vm_db3_name
+
+    initialize_params {
+      image = "projects/windows-sql-cloud/global/images/sql-2014-enterprise-windows-2012-r2-dc-v20230809"
+      size  = 50
+      type  = "pd-balanced"
+    }
+
+    mode = "READ_WRITE"
+  }
+
+  can_ip_forward      = false
+  deletion_protection = false
+  enable_display      = false
+
+  labels = {
+    goog-ec-src = "vm_add-tf"
+  }
+
+  machine_type = "n1-standard-1"
+  name         = var.vm_db3_name
+
+  network_interface {
+    access_config {
+      network_tier = "PREMIUM"
+    }
+
+    network_ip = "10.10.20.5"
     subnetwork = "projects/${var.project_id}/regions/${var.region}/subnetworks/${var.sql_subnet_name}"
   }
 

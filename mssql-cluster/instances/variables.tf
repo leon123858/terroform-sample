@@ -46,6 +46,10 @@ variable "vm_db2_name" {
   description = "Name of the db2."
   type        = string
 }
+variable "vm_db3_name" {
+  description = "Name of the db3."
+  type        = string
+}
 variable "vm_fsw1" {
   description = "Name of the fsw1."
   type        = string
