@@ -371,3 +371,69 @@ resource "google_compute_instance" "fsw1" {
   tags = ["ad-member", "fsw", "rdp", "wsfc"]
   zone = var.vm_zone3_name
 }
+
+resource "google_compute_instance_group" "group1" {
+  depends_on = [google_compute_instance.db1]
+  name       = var.group1_name
+  zone       = var.vm_zone1_name
+  instances  = [google_compute_instance.db1.self_link]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_instance_group" "group2" {
+  depends_on = [google_compute_instance.db2, google_compute_instance.db3]
+  name       = var.group2_name
+  zone       = var.vm_zone2_name
+  instances  = [google_compute_instance.db2.self_link, google_compute_instance.db3.self_link]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_compute_health_check" "tcp-health-check" {
+  name = "wsfc-healthcheck"
+
+  timeout_sec         = 1
+  check_interval_sec  = 2
+  healthy_threshold   = 1
+  unhealthy_threshold = 2
+
+  tcp_health_check {
+    port = 59997
+  }
+}
+
+# backend service
+resource "google_compute_region_backend_service" "groups" {
+  depends_on            = [google_compute_health_check.tcp-health-check]
+  name                  = "wsfc-backend"
+  region                = var.region
+  protocol              = "TCP"
+  load_balancing_scheme = "INTERNAL"
+  health_checks         = [google_compute_health_check.tcp-health-check.id]
+  backend {
+    group = google_compute_instance_group.group1.id
+  }
+  backend {
+    group = google_compute_instance_group.group2.id
+  }
+}
+
+# frontend
+resource "google_compute_forwarding_rule" "google_compute_forwarding_rule" {
+  name                  = "forwarding-rule"
+  region                = var.region
+  ip_address            = "10.10.20.10"
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "INTERNAL"
+  ports                 = ["1433"]
+  backend_service       = google_compute_region_backend_service.groups.id
+  network               = var.vpc_name
+  subnetwork            = var.sql_subnet_name
+
+  depends_on = [google_compute_region_backend_service.groups]
+}

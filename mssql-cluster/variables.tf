@@ -63,6 +63,16 @@ variable "vm_db3_name" {
   type        = string
   default     = "dbs204-sql3"
 }
+variable "group_name1" {
+  description = "Name of the instance group1."
+  type        = string
+  default     = "wsfc-group-1"
+}
+variable "group_name2" {
+  description = "Name of the instance group2."
+  type        = string
+  default     = "wsfc-group-2"
+}
 variable "vm_fsw1" {
   description = "Name of the fsw1."
   type        = string

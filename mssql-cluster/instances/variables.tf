@@ -54,3 +54,11 @@ variable "vm_fsw1" {
   description = "Name of the fsw1."
   type        = string
 }
+variable "group1_name" {
+  description = "Name of the group1."
+  type        = string
+}
+variable "group2_name" {
+  description = "Name of the group2."
+  type        = string
+}

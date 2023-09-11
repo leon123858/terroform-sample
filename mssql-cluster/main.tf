@@ -28,6 +28,8 @@ module "vms" {
   vm_db2_name     = var.vm_db2_name
   vm_db3_name     = var.vm_db3_name
   vm_fsw1         = var.vm_fsw1
+  group1_name     = var.group_name1
+  group2_name     = var.group_name2
 
   depends_on = [module.network]
 }
