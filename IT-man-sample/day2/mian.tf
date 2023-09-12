@@ -3,7 +3,22 @@ provider "google" {
   region  = var.region
 }
 
+resource "google_compute_disk" "default" {
+  name = "datadisk"
+  type = "pd-ssd"
+  zone = var.zone
+  size = 200
+
+  physical_block_size_bytes = 4096
+}
+
 resource "google_compute_instance" "instance-1" {
+  depends_on = [google_compute_disk.default]
+
+  attached_disk {
+    source = google_compute_disk.default.self_link
+    mode   = "READ_WRITE"
+  }
 
   boot_disk {
     auto_delete = true
