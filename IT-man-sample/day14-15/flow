@@ -1,0 +1,19 @@
+main:
+  params: [args]
+  steps:
+    - initialize:
+        assign:
+          - project: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - firestoreDatabaseId: ${args.db}
+          - firestoreBackupBucket: ${args.path}
+    - exportFirestoreDatabaseAll:
+        call: http.post
+        args:
+          url: ${"https://firestore.googleapis.com/v1/projects/"+project+"/databases/"+firestoreDatabaseId+":exportDocuments"}
+          auth:
+            type: OAuth2
+          body:
+            outputUriPrefix: ${firestoreBackupBucket}
+        result: result
+    - returnResult:
+        return: ${result}
