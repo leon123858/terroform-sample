@@ -1,7 +1,8 @@
 resource "google_service_account" "backup_service" {
-  account_id   = "service-account-backup"
+  # 短期內多次使用 account_id 要換, 避免 bug (推測帳號類資源不會實時刪除)
+  account_id   = "service-backup"
   display_name = "backup"
-  description  = "Service Account For Backup"
+  description  = "Service Account For Backup firestore"
 }
 
 resource "null_resource" "delay" {

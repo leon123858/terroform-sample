@@ -3,12 +3,16 @@ provider "google" {
   region  = var.region
 }
 
-resource "google_firestore_database" "database" {
-  name = "test-db-3"
-
-  location_id = var.region
-  type        = "FIRESTORE_NATIVE"
+locals {
+  db_name = "(default)"
 }
+
+# resource "google_firestore_database" "database" {
+#   name = local.db_name
+
+#   location_id = var.region
+#   type        = "FIRESTORE_NATIVE"
+# }
 
 module "gcs" {
   source     = "./gcs"
@@ -21,6 +25,14 @@ module "account" {
   project_id = var.project_id
 }
 
+# 設置 IAM 後多等一下, 避免 bug
+resource "null_resource" "delay" {
+  provisioner "local-exec" {
+    command = "sleep 60"
+  }
+  depends_on = [module.account]
+}
+
 module "workflow" {
   source     = "./workflow"
   project_id = var.project_id
@@ -28,7 +40,8 @@ module "workflow" {
   file       = "./flow"
   account    = module.account.self_link
 
-  depends_on = [google_firestore_database.database, module.gcs, module.account]
+  # depends_on = [google_firestore_database.database, module.gcs, module.account]
+  depends_on = [module.gcs, null_resource.delay]
 }
 
 module "scheduler" {
@@ -38,7 +51,7 @@ module "scheduler" {
   region     = var.region
   name       = module.workflow.name
   bucket     = module.gcs.path
-  db         = google_firestore_database.database.name
+  db         = local.db_name
 
   depends_on = [module.workflow]
 }

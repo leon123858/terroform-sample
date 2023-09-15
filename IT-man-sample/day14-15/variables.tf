@@ -16,5 +16,5 @@ variable "region" {
 variable "zone" {
   description = "Name of the zone_1."
   type        = string
-  default     = "asia-east1-b"
+  default     = "asia-east1-a"
 }
