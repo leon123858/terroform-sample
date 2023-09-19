@@ -85,7 +85,7 @@ func dbOperate() {
 	// fmt.Println(id)
 
 	var lastInsertId int
-	err = db.QueryRow("INSERT INTO userinfo(username,departname,created) VALUES($1,$2,$3) returning uid;", "astaxie", "研發部門", "2012-12-09").Scan(&lastInsertId)
+	err = db.QueryRow("INSERT INTO userinfo(username,department,created) VALUES($1,$2,$3) returning uid;", "astaxie", "研發部門", "2012-12-09").Scan(&lastInsertId)
 	checkErr(err)
 	fmt.Println("最後插入 id =", lastInsertId)
 
