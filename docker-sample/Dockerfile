@@ -34,6 +34,4 @@ COPY --from=build-stage /docker-gs-ping /docker-gs-ping
 
 EXPOSE 8080
 
-USER nonroot:nonroot
-
 ENTRYPOINT ["/docker-gs-ping"]

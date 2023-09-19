@@ -8,8 +8,5 @@ provider "google" {
 }
 
 module "cicd" {
-  source     = "./cicd"
-  git_app_id = "36856157"
-  git_token  = "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"
-  build_sa   = "service-77786086397@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+  source = "./cicd"
 }

@@ -19,6 +19,6 @@ output "git-url" {
   value       = "https://github.com/leon123858/terroform-sample"
 }
 output "build-file-path" {
-  description = "path to cloudbuild.yaml"
-  value       = "run-cd/cloudbuild.yaml"
+  description = "path to container dockerfile ex: docker-sample/Dockerfile"
+  value       = "docker-sample/Dockerfile"
 }

@@ -10,15 +10,27 @@ module "git-connection" {
   git_app_id = var.git_app_id
   build_sa   = var.build_sa
   region     = module.global_var.region
+  git-url    = module.global_var.git-url
 }
 
-module "builder" {
-  source        = "./cloud-build"
-  name          = "manual-trigger-test"
-  git-url       = module.global_var.git-url
-  file          = module.global_var.build-file-path
-  region        = module.global_var.region
-  connection-id = module.git-connection.id
+resource "google_artifact_registry_repository" "docker-images" {
+  location      = module.global_var.region
+  repository_id = "docker-sample"
+  description   = "example docker repository"
+  format        = "DOCKER"
 
-  depends_on = [module.git-connection]
+  docker_config {
+    immutable_tags = true
+  }
+}
+
+module "build" {
+  source    = "./cloud-build"
+  name      = "docker-sample"
+  file      = module.global_var.build-file-path
+  region    = module.global_var.region
+  repo-id   = module.git-connection.repo-id
+  repo-name = google_artifact_registry_repository.docker-images.name
+
+  depends_on = [module.git-connection, google_artifact_registry_repository.docker-images]
 }

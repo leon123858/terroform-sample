@@ -22,3 +22,7 @@ variable "git_app_id" {
   description = "id of the github app in repo. can find here https://github.com/settings/installations/<id>"
   type        = string
 }
+variable "git-url" {
+  description = "The url for project"
+  type        = string
+}

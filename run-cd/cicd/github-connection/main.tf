@@ -42,3 +42,12 @@ resource "google_cloudbuildv2_connection" "my_connection" {
   }
   depends_on = [null_resource.delay]
 }
+
+resource "google_cloudbuildv2_repository" "my-repository" {
+  name              = "${var.name}-repo"
+  location          = var.region
+  parent_connection = google_cloudbuildv2_connection.my_connection.id
+  remote_uri        = "${var.git-url}.git"
+
+  depends_on = [google_cloudbuildv2_connection.my_connection]
+}

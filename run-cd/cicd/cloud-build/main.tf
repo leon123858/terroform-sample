@@ -1,16 +1,9 @@
-resource "google_cloudbuildv2_repository" "my-repository" {
-  name              = "${var.name}-repo"
-  location          = var.region
-  parent_connection = var.connection-id
-  remote_uri        = "${var.git-url}.git"
-}
-
 resource "google_cloudbuild_trigger" "manual-trigger" {
   location = var.region
   name     = "${var.name}-triggrt"
 
   source_to_build {
-    repository = google_cloudbuildv2_repository.my-repository.id
+    repository = var.repo-id
     ref        = "refs/heads/main"
     repo_type  = "GITHUB"
   }
@@ -18,14 +11,22 @@ resource "google_cloudbuild_trigger" "manual-trigger" {
   build {
     step {
       name = "gcr.io/cloud-builders/docker"
-      args = ["build", "-t", "$_AR_HOSTNAME/$PROJECT_ID/cloud-run-source-deploy/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA", "."]
+      args = ["build", "--no-cache", "-t", "$_AR_HOSTNAME/$PROJECT_ID/$_REPO_NAME/$_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA", "${var.name}", "-f", "${var.file}"]
+    }
+    step {
+      name = "gcr.io/cloud-builders/docker"
+      args = ["push", "$_AR_HOSTNAME/$PROJECT_ID/$_REPO_NAME/$_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA"]
+    }
+    step {
+      name = "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+      args = ["run", "deploy", "${var.name}", "--image", "$_AR_HOSTNAME/$PROJECT_ID/$_REPO_NAME/$_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA", "--region", "${var.region}", "--platform", "managed", "--allow-unauthenticated"]
     }
 
     substitutions = {
       _SERVICE_NAME : var.name
       _DEPLOY_REGION : "${var.region}"
+      _REPO_NAME : "${var.repo-name}"
       _AR_HOSTNAME : "${var.region}-docker.pkg.dev"
-      /* _PLATFORM : managed */
     }
 
     artifacts {
@@ -39,6 +40,4 @@ resource "google_cloudbuild_trigger" "manual-trigger" {
   approval_config {
     approval_required = false
   }
-
-  depends_on = [google_cloudbuildv2_repository.my-repository]
 }
