@@ -22,3 +22,7 @@ output "build-file-path" {
   description = "path to container dockerfile ex: docker-sample/Dockerfile"
   value       = "docker-sample/Dockerfile"
 }
+output "service-name" {
+  description = "service name"
+  value = "docker-sample"
+}

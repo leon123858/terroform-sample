@@ -9,7 +9,7 @@ provider "google" {
 
 module "sql-instance" {
   source       = "./instances"
-  service_name = "docker-sample"
+  service_name = module.global_var.service-name
   region       = module.global_var.region
   run-sa       = "77786086397-compute@developer.gserviceaccount.com"
   db-name      = "postgres"
@@ -18,4 +18,10 @@ module "sql-instance" {
 module "cicd" {
   source     = "./cicd"
   depends_on = [module.sql-instance]
+
+  git_token = "<your git token>"
+  build_sa = "service-77786086397@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+  git_app_id = "36856157"
+  builder_sa = "77786086397@cloudbuild.gserviceaccount.com"
+  service_name = module.global_var.service-name
 }
