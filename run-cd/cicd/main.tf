@@ -15,22 +15,35 @@ module "git-connection" {
 
 resource "google_artifact_registry_repository" "docker-images" {
   location      = module.global_var.region
-  repository_id = "docker-sample"
+  repository_id = var.service_name
   description   = "example docker repository"
   format        = "DOCKER"
 
   docker_config {
-    immutable_tags = true
+    immutable_tags = false
   }
+}
+
+resource "google_project_iam_member" "r1" {
+  project = module.global_var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${var.builder_sa}"
+}
+
+resource "google_project_iam_member" "r2" {
+  project    = module.global_var.project_id
+  role       = "roles/iam.serviceAccountUser"
+  member     = "serviceAccount:${var.builder_sa}"
+  depends_on = [google_project_iam_member.r1]
 }
 
 module "build" {
   source    = "./cloud-build"
-  name      = "docker-sample"
+  name      = var.service_name
   file      = module.global_var.build-file-path
   region    = module.global_var.region
   repo-id   = module.git-connection.repo-id
   repo-name = google_artifact_registry_repository.docker-images.name
 
-  depends_on = [module.git-connection, google_artifact_registry_repository.docker-images]
+  depends_on = [module.git-connection, google_artifact_registry_repository.docker-images, google_project_iam_member.r2]
 }

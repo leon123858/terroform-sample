@@ -7,6 +7,15 @@ provider "google" {
   region  = module.global_var.region
 }
 
+module "sql-instance" {
+  source       = "./instances"
+  service_name = "sample-docker"
+  region       = module.global_var.region
+  run-sa       = "77786086397-compute@developer.gserviceaccount.com"
+  db-name      = "postgres"
+}
+
 module "cicd" {
-  source = "./cicd"
+  source     = "./cicd"
+  depends_on = [module.sql-instance]
 }
