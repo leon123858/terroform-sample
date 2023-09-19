@@ -9,7 +9,7 @@ provider "google" {
 
 module "sql-instance" {
   source       = "./instances"
-  service_name = "sample-docker"
+  service_name = "docker-sample"
   region       = module.global_var.region
   run-sa       = "77786086397-compute@developer.gserviceaccount.com"
   db-name      = "postgres"

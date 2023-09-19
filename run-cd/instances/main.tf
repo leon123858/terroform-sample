@@ -15,10 +15,10 @@ resource "google_sql_database_instance" "instance" {
   deletion_protection = "false"
 }
 
-resource "time_sleep" "wait_15_seconds" {
+resource "time_sleep" "wait_seconds" {
   depends_on = [google_sql_database_instance.instance]
 
-  create_duration = "15s"
+  create_duration = "60s"
 }
 
 resource "google_sql_user" "iam_service_account_user" {
@@ -29,7 +29,7 @@ resource "google_sql_user" "iam_service_account_user" {
   instance = google_sql_database_instance.instance.name
   type     = "CLOUD_IAM_SERVICE_ACCOUNT"
 
-  depends_on = [time_sleep.wait_15_seconds]
+  depends_on = [time_sleep.wait_seconds]
 }
 
 resource "google_cloud_run_v2_service" "default" {
