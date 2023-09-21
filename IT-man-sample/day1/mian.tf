@@ -34,7 +34,7 @@ resource "google_compute_instance" "instance-1" {
       network_tier = "PREMIUM"
     }
 
-    subnetwork = "projects/tw-rd-ca-leon-lin/regions/asia-east1/subnetworks/default"
+    subnetwork = "projects/${var.project_id}/regions/asia-east1/subnetworks/default"
   }
 
   scheduling {
