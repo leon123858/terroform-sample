@@ -5,55 +5,44 @@ import (
 	"net"
 	"os"
 
-	pb "github.com/leon123858/terroform-sample/docker-grpc/notify"
-
 	"google.golang.org/grpc"
+
+	pb "github.com/leon123858/terroform-sample/docker-grpc/proto"
 )
 
-type MailBoxService struct {
-	pb.UnimplementedMailBoxServer
-	// can save local var below
-	// mu sync.Mutex
+type NoticeService struct {
+	pb.UnsafeNoticeServiceServer
 }
 
-func (s *MailBoxService) GetNotify(in *pb.NotifyRequest, stream pb.MailBox_GetNotifyServer) error {
-	// for {
-	// when 2 direction stream, we need to use Recv() to get data from client
-	// in, err := stream.Recv()
-	// if err == io.EOF {
-	// 	return nil
-	// }
-	// if err != nil {
-	// 	return err
-	// }
-	// key := serialize(in.Location)
-
-	err := stream.Send(&pb.NotifyReply{
-		Message: "Hello " + in.ChannelId,
-	})
-	if err != nil {
-		return err
+func (s *NoticeService) Connect(in *pb.ChannelId, stream pb.NoticeService_ConnectServer) error {
+	// 向客戶端發送回應。
+	resp := &pb.Notice{
+		Id:  in.Id,
+		Msg: "Received GRPC",
 	}
-	return nil
-	// }
+	// 從客戶端接收消息。
+	for {
+		err := stream.Send(resp)
+		if err != nil {
+			return err
+		}
+	}
 }
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "50051"
+	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = "50051"
 	}
-
-	listen, err := net.Listen("tcp", ":"+port)
+	listen, err := net.Listen("tcp", ":"+PORT)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	server := grpc.NewServer()
-	// register service
-	service := MailBoxService{}
-	pb.RegisterMailBoxServer(server, &service)
+	pb.RegisterNoticeServiceServer(server, &NoticeService{})
 
-	println("start server on tcp://127.0.0.1:" + port)
-	server.Serve(listen)
+	if err := server.Serve(listen); err != nil {
+		log.Fatalln(err)
+	}
 }

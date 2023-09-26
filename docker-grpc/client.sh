@@ -1,6 +1,6 @@
 grpcurl \
   -plaintext \
   -proto proto/todo.proto \
-  -d '{"channelId": "123"}' \
+  -d '{"id": 1}' \
   127.0.0.1:50051 \
-  MailBox.GetNotify
+  NoticeService.Connect

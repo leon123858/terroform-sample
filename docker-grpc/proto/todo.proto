@@ -1,17 +1,17 @@
 syntax = "proto3";
 
-package notify;
-
-option go_package = "github.com/leon123858/terroform-sample/docker-grpc/proto/notify";
-
-message NotifyRequest {
-  string channelId = 1;
+option go_package = "./proto";
+//定義Service名稱，
+service NoticeService {
+  //定義api名稱，傳入參數與回傳值
+  rpc Connect(channelId) returns (stream notice) {}
 }
 
-message NotifyReply {
-  string message = 1;
-}
+//傳入參數的spec
+message channelId { int64 id = 1; }
 
-service MailBox {
-  rpc GetNotify (NotifyRequest) returns (stream NotifyReply) {}
+//回傳值的spec
+message notice {
+  int64 id = 1;
+  string msg = 2;
 }
