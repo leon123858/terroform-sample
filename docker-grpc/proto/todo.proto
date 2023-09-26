@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package notify;
+
+option go_package = "github.com/leon123858/terroform-sample/docker-grpc/proto/notify";
+
+message NotifyRequest {
+  string channelId = 1;
+}
+
+message NotifyReply {
+  string message = 1;
+}
+
+service MailBox {
+  rpc GetNotify (NotifyRequest) returns (stream NotifyReply) {}
+}
