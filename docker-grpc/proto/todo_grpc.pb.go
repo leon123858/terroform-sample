@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NoticeServiceClient interface {
 	// 定義api名稱，傳入參數與回傳值
-	Connect(ctx context.Context, in *ChannelId, opts ...grpc.CallOption) (NoticeService_ConnectClient, error)
+	Connect(ctx context.Context, in *UserId, opts ...grpc.CallOption) (NoticeService_ConnectClient, error)
 }
 
 type noticeServiceClient struct {
@@ -34,7 +34,7 @@ func NewNoticeServiceClient(cc grpc.ClientConnInterface) NoticeServiceClient {
 	return &noticeServiceClient{cc}
 }
 
-func (c *noticeServiceClient) Connect(ctx context.Context, in *ChannelId, opts ...grpc.CallOption) (NoticeService_ConnectClient, error) {
+func (c *noticeServiceClient) Connect(ctx context.Context, in *UserId, opts ...grpc.CallOption) (NoticeService_ConnectClient, error) {
 	stream, err := c.cc.NewStream(ctx, &NoticeService_ServiceDesc.Streams[0], "/NoticeService/Connect", opts...)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (x *noticeServiceConnectClient) Recv() (*Notice, error) {
 // for forward compatibility
 type NoticeServiceServer interface {
 	// 定義api名稱，傳入參數與回傳值
-	Connect(*ChannelId, NoticeService_ConnectServer) error
+	Connect(*UserId, NoticeService_ConnectServer) error
 	mustEmbedUnimplementedNoticeServiceServer()
 }
 
@@ -79,7 +79,7 @@ type NoticeServiceServer interface {
 type UnimplementedNoticeServiceServer struct {
 }
 
-func (UnimplementedNoticeServiceServer) Connect(*ChannelId, NoticeService_ConnectServer) error {
+func (UnimplementedNoticeServiceServer) Connect(*UserId, NoticeService_ConnectServer) error {
 	return status.Errorf(codes.Unimplemented, "method Connect not implemented")
 }
 func (UnimplementedNoticeServiceServer) mustEmbedUnimplementedNoticeServiceServer() {}
@@ -96,7 +96,7 @@ func RegisterNoticeServiceServer(s grpc.ServiceRegistrar, srv NoticeServiceServe
 }
 
 func _NoticeService_Connect_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ChannelId)
+	m := new(UserId)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
