@@ -1,10 +1,11 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"google.golang.org/grpc"
 
@@ -46,27 +47,36 @@ func main() {
 	if PORT == "" {
 		PORT = "50051"
 	}
-
+	server := grpc.NewServer()
 	noticesChannel := make(map[string](chan Notice), 0)
 
-	ctx := context.Background()
-	cancelCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	cancelSignal := make(chan os.Signal, 1)
+	signal.Notify(cancelSignal, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	pubSubInfo := PubSubInfo{}
-	pubSubInfo.init(ProjectID)
+	err := pubSubInfo.init(ProjectID)
+	if err != nil {
+		panic(err)
+	}
+
 	go func(p PubSubInfo, c *map[string](chan Notice)) {
-		PullMsgs(p, c, cancelCtx) // pass the address of the c variable
+		PullMsgs(p, c) // pass the address of the c variable
 	}(pubSubInfo, &noticesChannel)
+	go func() {
+		<-cancelSignal
+		err := pubSubInfo.release()
+		if err != nil {
+			panic(err)
+		}
+		server.Stop()
+	}()
+
+	pb.RegisterNoticeServiceServer(server, &NoticeService{ChannelId: pubSubInfo.ChannelId, noticesChannel: &noticesChannel})
 
 	listen, err := net.Listen("tcp", ":"+PORT)
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	server := grpc.NewServer()
-	pb.RegisterNoticeServiceServer(server, &NoticeService{ChannelId: pubSubInfo.ChannelId, noticesChannel: &noticesChannel})
-
 	if err := server.Serve(listen); err != nil {
 		log.Fatalln(err)
 	}

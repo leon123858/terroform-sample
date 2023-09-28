@@ -16,6 +16,7 @@ type PubSubInfo struct {
 	SubID     string
 	Topic     *pubsub.Topic
 	Sub       *pubsub.Subscription
+	Client    *pubsub.Client
 }
 
 type Notice struct {
@@ -75,35 +76,44 @@ func (info *PubSubInfo) deleteTopic(client *pubsub.Client, ctx context.Context) 
 func (info *PubSubInfo) init(projectId string) error {
 	info.ProjectID = projectId
 	ctx := context.Background()
+
 	client, err := pubsub.NewClient(ctx, info.ProjectID)
 	if err != nil {
 		return err
 	}
-	defer client.Close()
 
-	if err := info.createTopic(client, ctx); err != nil {
+	info.Client = client
+
+	if err := info.createTopic(info.Client, ctx); err != nil {
 		return err
 	}
-	if err := info.createSub(client, ctx); err != nil {
+	if err := info.createSub(info.Client, ctx); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func PullMsgs(info PubSubInfo, channelMap *map[string](chan Notice), ctx context.Context) {
-	client, err := pubsub.NewClient(ctx, info.ProjectID)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		info.deleteSub(client, ctx)
-		info.deleteTopic(client, ctx)
-		client.Close()
-	}()
+func (info *PubSubInfo) release() error {
+	ctx := context.Background()
 
-	sub := client.Subscription(info.SubID)
-	err = sub.Receive(ctx, func(_ context.Context, msg *pubsub.Message) {
+	if err := info.deleteTopic(info.Client, ctx); err != nil {
+		return err
+	}
+	if err := info.deleteSub(info.Client, ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// PullMsgs pulls messages from a Google Cloud Pub/Sub subscription and sends them to the corresponding user's channel in the channelMap.
+// It takes in a PubSubInfo struct containing the project ID and subscription ID, a pointer to a map containing user IDs and their corresponding channels,
+// and a context for cancellation. It returns nothing.
+func PullMsgs(info PubSubInfo, channelMap *map[string](chan Notice)) {
+	ctx := context.Background()
+	sub := info.Client.Subscription(info.SubID)
+	err := sub.Receive(ctx, func(_ context.Context, msg *pubsub.Message) {
 		notice, err := byteSliceToJSON(msg.Data)
 		if err != nil {
 			println(err.Error())
