@@ -64,10 +64,12 @@ func main() {
 	}(pubSubInfo, &noticesChannel)
 	go func() {
 		<-cancelSignal
+		println("start to release resources")
 		err := pubSubInfo.release()
 		if err != nil {
 			panic(err)
 		}
+		println("end to release resources")
 		server.Stop()
 	}()
 
@@ -77,6 +79,8 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	println("server start at port:" + PORT)
 	if err := server.Serve(listen); err != nil {
 		log.Fatalln(err)
 	}
