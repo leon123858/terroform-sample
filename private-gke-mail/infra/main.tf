@@ -55,3 +55,29 @@ module "mail_server" {
   source_repo      = module.repository.id
   depends_on       = [google_project_iam_member.build_r2]
 }
+
+// create gke in network
+module "gke" {
+  source       = "./gke"
+  project_id   = var.project_id
+  region       = var.region
+  gke_location = "${var.region}-a"
+}
+
+// create cloud nat for gke
+# module "cloud_nat" {
+#   source     = "./nat"
+#   project_id = var.project_id
+#   region     = var.region
+#   network    = module.gke.vpc_name
+#   name       = "nat-gke"
+# }
+
+// create jump server
+module "jump" {
+  source         = "./jump_gce"
+  name           = "jump"
+  zone           = "${var.region}-a"
+  subnetwork     = module.gke.gke_subnetwork_name
+  project_number = data.google_project.project.number
+}
