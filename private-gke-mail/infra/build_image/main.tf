@@ -21,7 +21,7 @@ resource "google_cloudbuild_trigger" "manual-trigger" {
   build {
     step {
       name = "gcr.io/cloud-builders/docker"
-      args = ["build", "--no-cache", "-t", "$_AR_HOSTNAME/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA", "${var.name}", "-f", "${var.docker_file_path}"]
+      args = ["build", "--no-cache", "-t", "$_AR_HOSTNAME/$PROJECT_ID/$_REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA", "${var.docker_file_path}", "-f", "${var.docker_file_path}/Dockerfile"]
     }
     step {
       name = "gcr.io/cloud-builders/docker"

@@ -14,5 +14,5 @@ variable "git_token" {
   description = "get access token in github, should have repo, read:user [, read:org] permission"
 }
 variable "image_path" {
-  description = "get image path in repo. ex: private-gke-mail/mail-server/Dockerfile"
+  description = "get image path in repo. ex: private-gke-mail/mail-server"
 }

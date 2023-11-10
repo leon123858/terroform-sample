@@ -11,6 +11,6 @@ variable "source_repo" {
   type        = string
 }
 variable "docker_file_path" {
-  description = "value of the docker_file_path of the builder"
+  description = "value of the docker_file_path of the builder (not need /Dockerfile)"
   type        = string
 }
