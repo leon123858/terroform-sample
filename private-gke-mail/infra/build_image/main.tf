@@ -2,10 +2,6 @@ resource "google_artifact_registry_repository" "docker-images" {
   location      = var.region
   repository_id = var.name
   format        = "DOCKER"
-
-  docker_config {
-    immutable_tags = false
-  }
 }
 
 resource "google_cloudbuild_trigger" "manual-trigger" {

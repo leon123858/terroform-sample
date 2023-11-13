@@ -1,15 +1,25 @@
-module "vpc-module" {
-  source       = "terraform-google-modules/network/google"
-  version      = "~> 7.0"
-  project_id   = var.project_id
-  network_name = var.custom_network
-  mtu          = 1460
+locals {
+  gke_pod_range_name     = "gke-pods"
+  gke_service_range_name = "gke-services"
+}
 
-  subnets = [
+resource "google_compute_network" "vpc-network" {
+  name = var.custom_network
+  mtu  = 1460
+}
+resource "google_compute_subnetwork" "vpc-subnet" {
+  name          = var.subnet_name
+  ip_cidr_range = var.subnet_ip
+  region        = var.region
+  network       = google_compute_network.vpc-network.id
+  secondary_ip_range = [
     {
-      subnet_name   = var.subnet_name
-      subnet_ip     = var.subnet_ip
-      subnet_region = var.region
+      range_name    = local.gke_pod_range_name
+      ip_cidr_range = "10.1.0.0/16"
+    },
+    {
+      range_name    = local.gke_service_range_name
+      ip_cidr_range = "10.2.0.0/16"
     }
   ]
 }
@@ -19,8 +29,8 @@ resource "google_container_cluster" "primary" {
   name                = var.gke_name
   location            = var.gke_location
   initial_node_count  = 2
-  network             = module.vpc-module.network_name
-  subnetwork          = module.vpc-module.subnets_names[0]
+  network             = google_compute_network.vpc-network.name
+  subnetwork          = google_compute_subnetwork.vpc-subnet.name
   deletion_protection = false
 
   private_cluster_config {
@@ -29,15 +39,21 @@ resource "google_container_cluster" "primary" {
     enable_private_nodes    = true
   }
   ip_allocation_policy {
+    cluster_secondary_range_name = local.gke_pod_range_name
+    # cluster_ipv4_cidr_block       = "10.1.0.0/16"
+    services_secondary_range_name = local.gke_service_range_name
+    # services_ipv4_cidr_block      = "10.2.0.0/16"
   }
   master_authorized_networks_config {
   }
+
+  depends_on = [google_compute_subnetwork.vpc-subnet]
 }
 
 resource "google_compute_firewall" "rules" {
   project = var.project_id
   name    = "gke-allow-ssh"
-  network = module.vpc-module.network_name
+  network = google_compute_network.vpc-network.name
   allow {
     protocol = "tcp"
     ports    = ["22"]

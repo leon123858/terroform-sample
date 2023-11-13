@@ -13,7 +13,7 @@ variable "subnetwork" {
 variable "zone" {
   description = "Zone to deploy the instance to"
   type        = string
-  default     = "asia-east1-a"
+  # default     = "asia-east1-a"
 }
 
 variable "project_id" {

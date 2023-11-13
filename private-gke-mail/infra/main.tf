@@ -65,13 +65,15 @@ module "gke" {
 }
 
 // create cloud nat for gke
-# module "cloud_nat" {
-#   source     = "./nat"
-#   project_id = var.project_id
-#   region     = var.region
-#   network    = module.gke.vpc_name
-#   name       = "nat-gke"
-# }
+module "cloud_nat" {
+  source     = "./nat"
+  project_id = var.project_id
+  region     = var.region
+  network    = module.gke.vpc_name
+  name       = "nat-gke"
+
+  depends_on = [module.gke]
+}
 
 // create jump server
 module "jump" {
@@ -80,4 +82,6 @@ module "jump" {
   zone           = "${var.region}-a"
   subnetwork     = module.gke.gke_subnetwork_name
   project_number = data.google_project.project.number
+
+  depends_on = [module.gke]
 }

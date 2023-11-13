@@ -3,7 +3,7 @@
 */
 
 output "vpc_name" {
-  value = module.vpc-module.network_name
+  value = google_compute_network.vpc-network.name
 }
 
 output "gke_cluster_name" {
@@ -11,5 +11,5 @@ output "gke_cluster_name" {
 }
 
 output "gke_subnetwork_name" {
-  value = module.vpc-module.subnets_self_links[0]
+  value = google_compute_subnetwork.vpc-subnet.name
 }
