@@ -27,8 +27,8 @@ func main() {
 }
 
 func send(body string, to string) error {
-	from := "mail-tester@test-mail.trantrithong.com"
-	pass := "cloudmile1234858"
+	from := "<your mail>"
+	pass := "<your password>"
 	//to := "a0970785699@gmail.com"
 
 	msg := "From: " + from + "\n" +
