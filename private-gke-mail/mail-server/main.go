@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"log"
 	"net/smtp"
+	"os"
 )
 
 func main() {
@@ -27,8 +28,8 @@ func main() {
 }
 
 func send(body string, to string) error {
-	from := "<your mail>"
-	pass := "<your password>"
+	from := os.Getenv("MAIL_USERNAME")
+	pass := os.Getenv("MAIL_PASSWORD")
 	//to := "a0970785699@gmail.com"
 
 	msg := "From: " + from + "\n" +
