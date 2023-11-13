@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mail-deployment
+  labels:
+    app: mail
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mail
+  template:
+    metadata:
+      labels:
+        app: mail
+    spec:
+      containers:
+      - name: mail-container
+        image: <image place>:<tag>
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MAIL_USERNAME
+          value: <your email>
+        - name: MAIL_PASSWORD
+          value: <your password>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-mail-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mail
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
